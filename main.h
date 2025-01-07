@@ -9,13 +9,9 @@
 #include <sys/types.h>
 
 extern char **environ;
-
 void printPrompt(void);
-
 void token_input(char *input);
-
 char *_getpath(char *cmd);
-
 void executable(char **argv, char *input);
 
 
