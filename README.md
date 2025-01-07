@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 We are excited to introduce our latest project from Holberton School, where we developed a custom simple shell in C. This project demonstrates our growing proficiency in systems programming by strictly using a limited set of standard library functions.
 
 ### Allowed Functions and System Calls:
@@ -65,4 +64,3 @@ We are excited to introduce our latest project from Holberton School, where we d
   - Implement the env built-in command to display the current environment variables.
 
 We have diligently followed these requirements, ensuring that our project is well-structured, clean, and error-free, meeting all the criteria set out while showcasing our growing programming skills.
-=======
