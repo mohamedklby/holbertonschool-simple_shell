@@ -1,85 +1,37 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <errno.h>
-
-#define MAX_INPUT 1024
+#include "shell.h"
 
 /**
- * main - Simple shell program
- * @argc: argument count
- * @argv: argument vector
- * Return: 0 on success
+ * main - Entry point
+ *
+ * Return: 0 to sucess
  */
-int main(int argc, char *argv[])
+
+int main(void)
 {
-	char *line = NULL;
-	size_t len = 0;
-	ssize_t nread;
-	char *command;
-	pid_t pid;
-	int status;
+	char *input = NULL;
+	size_t len_input = 0;
+	ssize_t read = 0;
 
 	while (1)
 	{
-		// Display prompt
-		printf("#cisfun$ ");
-
-		// Get user input
-		nread = getline(&line, &len, stdin);
-
-		// Check for EOF (Ctrl+D)
-		if (nread == -1)
+		if (isatty(STDIN_FILENO))
 		{
-			if (feof(stdin))
-			{
-				printf("\n");
-				break; // End of file, exit the shell
-			}
-			else
-			{
-				perror("getline");
-				continue;
-			}
+			printf("SimpleSimple$ ");
+			fflush(stdout);
 		}
 
-		// Remove newline character at the end of input
-		if (line[nread - 1] == '\n')
+		read = getline(&input, &len_input, stdin);
+		if (read == EOF)
 		{
-			line[nread - 1] = '\0';
+			free(input);
+			exit(0);
 		}
-
-		// Parse the command (only a single word is allowed)
-		command = strtok(line, " \t");
-
-		if (command == NULL) // Empty line, continue
-			continue;
-
-		// Fork a child process to execute the command
-		pid = fork();
-		if (pid == -1)
+		if (read > 0 && input[read - 1] == '\n')
 		{
-			perror("fork");
-			continue;
+			input[read - 1] = '\0';
 		}
-		else if (pid == 0)
-		{
-			// Child process: attempt to execute the command
-			if (execve(command, &command, NULL) == -1)
-			{
-				// If command is not found, print error message
-				perror("./shell");
-				exit(EXIT_FAILURE);
-			}
-		}
-		else
-		{
-			// Parent process: wait for the child to finish
-			waitpid(pid, &status, 0);
-		}
+		token_input(input);
 	}
-
-
+	free(input);
+	return (0);
+}
