@@ -1,34 +1,50 @@
-#ifndef SIMPLE_SHELL_H
-#define SIMPLE_SHELL_H
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <errno.h>
-
-/* Macro for the shell prompt */
-#define PROMPT "#cisfun$ "
-
-/* Global environment variable */
-extern char **environ;
-
-/* Function prototypes */
+#include "shell.h"
 
 /**
- * find_command_path - Finds the full path of a command.
- * @command: The command to locate.
- *
- * Return: The full path of the command or NULL if not found.
+ * find_executable_path - search exec in path
+ * @command: that command to search
+ * Return: the exec if it's work or return NULL
  */
-char *find_command_path(char *command);
+char *find_executable_path(char *command)
+{
+	char *path = _getenv("PATH"), *path_copy = _strdup(path);
+	char *dir = strtok(path_copy, ":"), *full_path = malloc(PATH_MAX);
 
-/**
- * execute_command - Executes a given command.
- * @command: The command to execute.
- */
-void execute_command(char *command);
+	if (!full_path)
+	{
+		perror("malloc");
+		free(path_copy);
+		return (NULL);
+	}
 
-#endif /* SIMPLE_SHELL_H */
+	if (_strchr(command, '/'))
+	{
+		if (access(command, X_OK) == 0)
+		{
+			free(path_copy);
+			free(full_path);
+			return (_strdup(command));
+		}
+		free(path_copy);
+		free(full_path);
+		return (NULL);
+	}
+
+	while (dir)
+	{
+		_strcpy(full_path, dir);
+		_strcat(full_path, "/");
+		_strcat(full_path, command);
+
+		if (access(full_path, X_OK) == 0)
+		{
+			free(path_copy);
+			return (full_path);
+		}
+
+		dir = strtok(NULL, ":");
+	}
+	free(full_path);
+	free(path_copy);
+	return (NULL);
+}
