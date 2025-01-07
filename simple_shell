@@ -1,0 +1,15 @@
+#include <stdio.h>
+#include <stlib.h>
+
+int main() {
+
+	char commande_invite[256]
+
+	printf("Entrez une commande: ")
+
+	fgets commande_invite, sizeof(commande_invite), stdin);
+
+	printf("Votre commande est : "), commande_invite);
+
+return (0);
+}
