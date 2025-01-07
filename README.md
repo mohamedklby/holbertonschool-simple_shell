@@ -66,5 +66,3 @@ We are excited to introduce our latest project from Holberton School, where we d
 
 We have diligently followed these requirements, ensuring that our project is well-structured, clean, and error-free, meeting all the criteria set out while showcasing our growing programming skills.
 =======
-rania 
->>>>>>> refs/remotes/origin/main
