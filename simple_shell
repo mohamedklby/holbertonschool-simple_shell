@@ -1,15 +1,28 @@
 #include <stdio.h>
-#include <stlib.h>
+#include <stdlib.h>
+#include <string.h>
 
 int main() {
+	char *path_env = getenv("PATH");  // Obtenir la variable d'environnement PATH
+	if (path_env == NULL) {
+		printf("La variable d'environnement PATH n'est pas définie.\n");
+		return 1;
+	}
 
-	char commande_invite[256]
+	printf("Contenu de PATH : %s\n", path_env);
 
-	printf("Entrez une commande: ")
+	// Rechercher un exécutable dans les répertoires de PATH
+	char *path_copy = strdup(path_env);  // Créer une copie de PATH pour le traiter
+	char *dir = strtok(path_copy, ":");  // Diviser PATH en répertoires (Unix-style)
 
-	fgets commande_invite, sizeof(commande_invite), stdin);
+	while (dir != NULL) {
+		printf("Répertoire dans PATH : %s\n", dir);
+		// Vous pouvez ici vérifier si un exécutable existe dans ce répertoire...
+		dir = strtok(NULL, ":");  // Passer au répertoire suivant
+	}
 
-	printf("Votre commande est : "), commande_invite);
+	free(path_copy);  // Libérer la mémoire allouée
 
-return (0);
+	return 0;
 }
+
