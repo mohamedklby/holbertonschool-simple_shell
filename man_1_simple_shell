@@ -1,0 +1,59 @@
+.TH HSH 1 "JAN 08 2025" "1.0" "Holberton Simple Shell"
+	.SH NAME
+hsh - A simple command line interpreter (shell)
+	.PP
+	.SH SYNOPSIS
+	.B hsh
+	[command [arguments...]]
+	.PP
+	.SH DESCRIPTION
+	.B hsh
+	is a basic Unix shell that reads and executes commands provided by the user. It supports both interactive and non-interactive modes. The shell splits the user input into tokens, searches for executable files, and runs them in a child process.
+	.PP
+	The shell behaves like a typical command line interpreter:
+	.RS
+	1. It prompts the user for input.
+	2. It processes the input by tokenizing the command string.
+	3. It executes the specified command or shows an error if the command is not found.
+	.RE
+	.PP
+	.SH COMMAND EXECUTION
+	Commands entered by the user are first tokenized and analyzed. If the command is a built-in command, it is executed directly. Otherwise, the shell searches for the command in the directories specified in the PATH environment variable and attempts to execute it.
+
+	Commands are executed in a child process, allowing the shell to continue running after executing a command.
+	.PP
+	.SH BUILTIN COMMANDS
+	.IP "env"
+	Prints the environment variables currently set in the shell.
+	.IP "exit"
+	Exits the shell and frees any allocated memory.
+	.PP
+	.SH ENVIRONMENT VARIABLES
+	The shell uses the following environment variables:
+	.IP "PATH"
+	A colon-separated list of directories used by the shell to search for executables. If the command is not found in the current directory, the shell searches the directories listed in the PATH variable.
+	.PP
+	.SH ERROR HANDLING
+	If a command is not found or fails to execute, the shell prints an error message:
+	.RS
+	.B "./hsh: 1: command: not found"
+	.RE
+	If the user enters a command with invalid syntax, the shell will display an appropriate error message.
+	.PP
+	.SH EXIT STATUS
+	.B hsh
+	returns the following exit status codes:
+	.IP "0"
+	Success – the command was executed successfully.
+	.IP "1"
+	Failure – an error occurred during execution.
+	.IP "127"
+	Command not found – the shell could not locate the specified command.
+	.PP
+	.SH BUGS
+	Currently, there are some memory leaks in the shell when it exits. These will be addressed in future releases.
+	.PP
+	.SH AUTHOR
+
+  --> Developed by the Holberton School students.
+
