@@ -1,0 +1,80 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+
+// Fonction pour rechercher une commande dans le PATH
+char *find_in_path(const char *cmd) {
+	char *path_env = getenv("PATH");
+	if (!path_env) return NULL;
+
+	char *path = strtok(path_env, ":");
+	while (path) {
+		char full_path[1024];
+		snprintf(full_path, sizeof(full_path), "%s/%s", path, cmd);
+		if (access(full_path, X_OK) == 0) {
+			return strdup(full_path);
+		}
+		path = strtok(NULL, ":");
+	}
+	return NULL;
+}
+
+int main() {
+	char *cmd = NULL;
+	size_t len = 0;
+
+	// Lire la commande de l'utilisateur
+	printf("Entrez une commande: ");
+	if (getline(&cmd, &len, stdin) == -1) {
+		perror("getline");
+		exit(EXIT_FAILURE);
+	}
+
+	// Enlever le saut de ligne à la fin
+	cmd[strlen(cmd) - 1] = '\0';
+
+	// Trouver le chemin complet de la commande
+	char *cmd_path = find_in_path(cmd);
+	if (!cmd_path) {
+		fprintf(stderr, "Commande introuvable : %s\n", cmd);
+		free(cmd);
+		exit(EXIT_FAILURE);
+	}
+
+	// Créer un processus fils pour exécuter la commande
+	pid_t pid = fork();
+	if (pid < 0) {
+		perror("fork");
+		free(cmd);
+		free(cmd_path);
+		exit(EXIT_FAILURE);
+	}
+
+	if (pid == 0) {
+		// Dans le fils, exécuter la commande
+		char *argv[] = {cmd_path, NULL};
+		execve(cmd_path, argv, NULL);
+		// Si execve échoue
+		perror("execve");
+		free(cmd);
+		free(cmd_path);
+		_exit(EXIT_FAILURE);
+	} else {
+		// Dans le parent, attendre la fin du processus fils
+		int status;
+		waitpid(pid, &status, 0);
+		if (WIFEXITED(status)) {
+			printf("Le processus fils a terminé avec le code %d.\n", WEXITSTATUS(status));
+		} else {
+			printf("Le processus fils a échoué.\n");
+		}
+	}
+
+	free(cmd);
+	free(cmd_path);
+	return 0;
+}
+
