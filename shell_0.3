@@ -25,56 +25,72 @@ char *find_in_path(const char *cmd) {
 int main() {
 	char *cmd = NULL;
 	size_t len = 0;
+	ssize_t read;
 
-	// Lire la commande de l'utilisateur
-	printf("Entrez une commande: ");
-	if (getline(&cmd, &len, stdin) == -1) {
-		perror("getline");
-		exit(EXIT_FAILURE);
-	}
+	// Boucle principale du shell
+	while (1) {
+		// Afficher le prompt
+		printf("simple_shell$ ");
 
-	// Enlever le saut de ligne à la fin
-	cmd[strlen(cmd) - 1] = '\0';
-
-	// Trouver le chemin complet de la commande
-	char *cmd_path = find_in_path(cmd);
-	if (!cmd_path) {
-		fprintf(stderr, "Commande introuvable : %s\n", cmd);
-		free(cmd);
-		exit(EXIT_FAILURE);
-	}
-
-	// Créer un processus fils pour exécuter la commande
-	pid_t pid = fork();
-	if (pid < 0) {
-		perror("fork");
-		free(cmd);
-		free(cmd_path);
-		exit(EXIT_FAILURE);
-	}
-
-	if (pid == 0) {
-		// Dans le fils, exécuter la commande
-		char *argv[] = {cmd_path, NULL};
-		execve(cmd_path, argv, NULL);
-		// Si execve échoue
-		perror("execve");
-		free(cmd);
-		free(cmd_path);
-		_exit(EXIT_FAILURE);
-	} else {
-		// Dans le parent, attendre la fin du processus fils
-		int status;
-		waitpid(pid, &status, 0);
-		if (WIFEXITED(status)) {
-			printf("Le processus fils a terminé avec le code %d.\n", WEXITSTATUS(status));
-		} else {
-			printf("Le processus fils a échoué.\n");
+		// Lire la commande entrée par l'utilisateur
+		if ((read = getline(&cmd, &len, stdin)) == -1) {
+			perror("getline");
+			free(cmd);
+			exit(EXIT_FAILURE);
 		}
+
+		// Enlever le saut de ligne à la fin de la commande
+		cmd[strlen(cmd) - 1] = '\0';
+
+		// Si la commande est "exit", quitter le shell
+		if (strcmp(cmd, "exit") == 0) {
+			free(cmd);
+			exit(EXIT_SUCCESS);
+		}
+
+		// Trouver le chemin complet de la commande
+		char *cmd_path = find_in_path(cmd);
+		if (!cmd_path) {
+			fprintf(stderr, "Commande introuvable : %s\n", cmd);
+			continue; // Recommencer la boucle sans faire un fork
+		}
+
+		// Créer un processus fils
+		pid_t pid = fork();
+		if (pid < 0) {
+			perror("fork");
+			free(cmd);
+			free(cmd_path);
+			exit(EXIT_FAILURE);
+		}
+
+		if (pid == 0) {
+			// Dans le processus fils, exécuter la commande
+			char *argv[] = {cmd_path, NULL};  // Arguments pour execve
+			execve(cmd_path, argv, NULL);
+			// Si execve échoue
+			perror("execve");
+			free(cmd);
+			free(cmd_path);
+			_exit(EXIT_FAILURE);
+		} else {
+			// Dans le processus parent, attendre la fin du processus fils
+			int status;
+			waitpid(pid, &status, 0);
+			if (WIFEXITED(status)) {
+				printf("Le processus fils a terminé avec le code %d.\n", WEXITSTATUS(status));
+			} else {
+				printf("Le processus fils a échoué.\n");
+			}
+		}
+
+		// Libération de la mémoire allouée
+		free(cmd);
+		free(cmd_path);
+		cmd = NULL;
+		len = 0;
 	}
 
-	free(cmd);
-	free(cmd_path);
 	return 0;
 }
 
