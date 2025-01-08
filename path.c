@@ -1,54 +1,52 @@
-
-#include "shell.h"
+#include "main.h"
 
 /**
- * is_a_command - Checks if the input corresponds to an executable command
- * by using the PATH environment variable and the access function.
+ * _getpath- function that finds the path to execute command
  *
- * @args: The command to check, provided as a string.
+ * @command: command enter by user in input
  *
- * Return: NULL if the command is not found or an error occurs.
- * Otherwise, returns the full path to the executable.
+ * Return: command if command has '/', result of concat with PATH
+ * or NULL if nothing is found
  */
-char *is_a_command(char *args)
+
+char *_getpath(char *command)
 {
-	char *path, *tmp, *directory, *executable_path;
-	struct stat st;
+	int i = 0;
+	char *token = NULL;
+	char *cache;
+	char *result = NULL;
 
-	if (access(args, X_OK) == 0)
-		return (strdup(args));
-
-	path = _getenv("PATH");
-	if (!path)
-		return (0);
-
-
-	tmp = strdup(path);
-	if (!tmp)
-		return (0);
-
-	executable_path = malloc(4096);
-	if (!executable_path)
+	if (strchr(command, '/') != NULL)
+		return (strdup(command));
+	while (environ[i])
 	{
-		free(tmp);
-		return (0);
-	}
-
-
-	directory = strtok(tmp, ":");
-	while (directory)
-	{
-		sprintf(executable_path, "%s/%s", directory, args);
-
-		if (stat(executable_path, &st) == 0 && access(executable_path, X_OK) == 0)
+		cache = strdup(environ[i]);
+		token = strtok(cache, "=");
+		if (strcmp(token, "PATH") == 0)
 		{
-			free(tmp);
-			return (executable_path);
+			token = strtok(NULL, "=");
+			token = strtok(token, ":");
+			while (token)
+			{
+				result = malloc(strlen(token) + strlen(command) + 2);
+				if (result ==  NULL)
+				{
+					perror("Malloc is NULL");
+					return (NULL);
+				}
+				sprintf(result, "%s/%s", token, command);
+				if (access(result, X_OK) == 0)
+				{
+					free(cache);
+					return (result);
+				}
+				free(result);
+				token = strtok(NULL, ":");
+			}
 		}
-		directory = strtok(NULL, ":");
+		free(cache);
+		i++;
 	}
-
-	free(executable_path);
-	free(tmp);
-	return (0);
+	free(command);
+	return (NULL);
 }
